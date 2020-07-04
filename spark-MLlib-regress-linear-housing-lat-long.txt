@@ -51,6 +51,10 @@ val frdd1 = frdd.map( x => Array(x._2._2(0),x._2._2(1),x._2._1(0),x._2._1(1),x._
 
 frdd1.map(x => x(0)+","+x(1)+","+x(2)+","+x(3)+","+x(4)+","+x(5)+","+x(6)+","+x(7)+","+x(8)+","+x(9)+","+x(10)).saveAsTextFile("/tmp/house_city")
 
+--------------------------
+
+cp /tmp/house_city/part-00000 ~/housing-city.txt
+
 -------------------------- Analysis and transformation of housing dataset using location instead of Latitude/Longitude 
 
 val rdd = sc.textFile("housing-city.txt").map( x => x.split(","))
@@ -88,15 +92,17 @@ import org.apache.spark.mllib.linalg.Vectors
 import org.apache.spark.mllib.regression.LabeledPoint
 
 val data = vect.map(r => {
-  val arr_size = r.size
+  val arr_size = r.size 
   val l = r(arr_size-1)/10000
-  val f = r.slice(0,arr_size-2)
+  val f = r.slice(0,arr_size-1)
   LabeledPoint(l,Vectors.dense(f))
 })
 
 val sets = data.randomSplit(Array(0.8,0.2))
 val trainSet = sets(0)
 val testSet = sets(1)
+
+trainSet.cache
 
 import org.apache.spark.mllib.regression.LinearRegressionWithSGD
 val model = LinearRegressionWithSGD.train(trainSet, 200, 1.0)
@@ -109,77 +115,77 @@ alg.optimizer.setNumIterations(200)
 ---- step size = 1.0
 alg.optimizer.setStepSize(1.0)
 val model = alg.run(trainSet)
-model: intercept = NaN, numFeatures = 818
+model: intercept = NaN, numFeatures = 819
 
 ---- step size = 0.1
 alg.optimizer.setStepSize(0.1)
 val model = alg.run(trainSet)
-model: intercept = NaN, numFeatures = 818
+model: intercept = NaN, numFeatures = 819
 
 ---- step size = 0.01
 alg.optimizer.setStepSize(0.01)
 val model = alg.run(trainSet)
-model: intercept = NaN, numFeatures = 818
+model: intercept = NaN, numFeatures = 819
 
 ---- step size = 0.001
 alg.optimizer.setStepSize(0.001)
 val model = alg.run(trainSet)
-model: intercept = NaN, numFeatures = 818
+model: intercept = NaN, numFeatures = 819
 
 ---- step size = 0.0001
 alg.optimizer.setStepSize(0.0001)
 val model = alg.run(trainSet)
-model: intercept = NaN, numFeatures = 818
+model: intercept = NaN, numFeatures = 819
 
 ---- step size = 0.00001
 alg.optimizer.setStepSize(0.00001)
 val model = alg.run(trainSet)
-model: intercept = -2.0558288956040616E237, numFeatures = 818
+model: intercept = -2.067918453273963E240, numFeatures = 819
 
 val validPredicts = testSet.map(x => (model.predict(x.features),x.label))
 
 validPredicts.take(10)
-res15: Array[(Double, Double)] = Array((-2.805889351345187E244,8.88), (-2.3631147919032612E244,15.92), (-4.368854206321573E244,26.67), (-2.990192356304651E244,10.0), (-3.5671067109101555E244,23.58), (-4.0663905436860975E244,9.75), (-2.2807996129677395E244,18.16), (-3.2271943607502757E244,19.96), (-6.856912232975341E244,31.86), (-2.7001253679789552E244,7.62))
+res20: Array[(Double, Double)] = Array((-2.983625697460093E247,17.28), (-4.517514136302685E247,26.67), (-5.5244101300078043E247,28.66), (-2.1268496741960973E247,18.4), (-2.5539265688182485E247,22.01), (-3.2896102977585556E247,23.57), (-2.703409045612244E247,8.82), (-2.7922219912802063E247,7.62), (-9.518879986455287E247,9.79), (-4.144191108336856E247,18.19))
 
 ---- step size = 0.000001
 alg.optimizer.setStepSize(0.000001)
 val model = alg.run(trainSet)
-model: intercept = 0.988456152954546, numFeatures = 818
+model: intercept = 1.0016148517271306, numFeatures = 819
 
 val validPredicts = testSet.map(x => (model.predict(x.features),x.label))
 
 validPredicts.take(10)
-res17: Array[(Double, Double)] = Array((-3212.7263361818964,8.88), (4527.63674982092,15.92), (-41196.37706795759,26.67), (5594.492640751218,10.0), (4975.775588629796,23.58), (77.55545389388203,9.75), (2338.2554284315534,18.16), (-4053.590731983208,19.96), (-30470.45411834553,31.86), (7956.440092976349,7.62))
+res22: Array[(Double, Double)] = Array((19569.697668385612,17.28), (694974.6203658519,26.67), (309806.76352168416,28.66), (-81774.26633028047,18.4), (155106.104470247,22.01), (-155653.41123321338,23.57), (-71579.22552173394,8.82), (-153582.29594903614,7.62), (510975.7156034586,9.79), (-131868.3137723981,18.19))
 
 ---- step size = 0.0000001
 alg.optimizer.setStepSize(0.0000001)
 val model = alg.run(trainSet)
-model: intercept = 1.0000023959572417, numFeatures = 818
+model: intercept = 1.0000024148713829, numFeatures = 819
 
 val validPredicts = testSet.map(x => (model.predict(x.features),x.label))
 
 validPredicts.take(10)
-res19: Array[(Double, Double)] = Array((12.46567609946326,8.88), (10.540473625047694,15.92), (18.844834609519307,26.67), (13.112720847341867,10.0), (15.553389693679733,23.58), (17.638692638079455,9.75), (10.325704824959434,18.16), (14.133015851207674,19.96), (28.994072033475675,31.86), (12.001896070514562,7.62))
+res24: Array[(Double, Double)] = Array((12.436154357067657,17.28), (18.412890512994732,26.67), (22.193221996600165,28.66), (9.192123720342742,18.4), (10.83497850699824,22.01), (13.658192217812495,23.57), (11.404221668337001,8.82), (11.731817585654642,7.62), (37.739963806977244,9.79), (16.94221368338814,18.19))
 
 import org.apache.spark.mllib.evaluation.RegressionMetrics
 val validMetrics = new RegressionMetrics(validPredicts)
-validMetrics.rootMeanSquaredError  // 16.821539165158427
-validMetrics.meanSquaredError  // 282.96417988495887
+validMetrics.rootMeanSquaredError  // 16.133357075746478
+validMetrics.meanSquaredError  // 260.28521053353893
 
 ---- step size = 0.00000001
 alg.optimizer.setStepSize(0.00000001)
 val model = alg.run(trainSet)
-model: intercept = 1.0000003213058992, numFeatures = 818
+model: intercept = 1.0000003216746134, numFeatures = 819
 
 val validPredicts = testSet.map(x => (model.predict(x.features),x.label))
 
 validPredicts.take(10)
-res23: Array[(Double, Double)] = Array((3.798283596193442,8.88), (3.347893652176225,15.92), (5.356434150762241,26.67), (3.9740281784398803,10.0), (4.555717956858309,23.58), (5.057078040700263,9.75), (3.2750458105663167,18.16), (4.2143250033248405,19.96), (7.836440719968052,31.86), (3.6904093582524338,7.62))
+res28: Array[(Double, Double)] = Array((3.8917408713458608,17.28), (5.385781271085666,26.67), (6.355688791213388,28.66), (3.064377966429644,18.4), (3.4787493346193266,22.01), (4.1920491169900815,23.57), (3.6233555924578376,8.82), (3.7084627982486182,7.62), (10.245141896526846,9.79), (5.020965575881127,18.19))
 
 import org.apache.spark.mllib.evaluation.RegressionMetrics
 val validMetrics = new RegressionMetrics(validPredicts)
-validMetrics.rootMeanSquaredError  // 20.43061974055267
-validMetrics.meanSquaredError  // 417.4102229830606
+validMetrics.rootMeanSquaredError  // 20.29826126211758
+validMetrics.meanSquaredError  // 412.0194102651832
 
 
 -------------------------- Decide to scale features because variabiliaty increases even reducing step size of model 
@@ -198,44 +204,44 @@ alg.optimizer.setNumIterations(200)
 ---- step size = 1.0
 alg.optimizer.setStepSize(1.0)
 val model = alg.run(trainScaled)
-model: intercept = 20.628720088340465, numFeatures = 818
+model: intercept = 20.661655308686882, numFeatures = 819
 
 val validPredicts = validScaled.map(x => (model.predict(x.features),x.label))
 
 validPredicts.take(10)
-res31: Array[(Double, Double)] = Array((10.399655510703083,8.88), (18.878225530969242,15.92), (24.257563127084538,26.67), (10.407386534869058,10.0), (30.719835827322207,23.58), (11.165803988038578,9.75), (20.000718874242075,18.16), (20.6901955029934,19.96), (26.09321111976859,31.86), (7.990721657493841,7.62))
+res35: Array[(Double, Double)] = Array((18.29248943870616,17.28), (22.521816215853317,26.67), (23.334497655473022,28.66), (19.299992062864938,18.4), (18.8709427412212,22.01), (25.01428725611845,23.57), (11.449058594475419,8.82), (8.668503741169989,7.62), (13.102486204785816,9.79), (20.3680066181738,18.19))
 
 import org.apache.spark.mllib.evaluation.RegressionMetrics
 val validMetrics = new RegressionMetrics(validPredicts)
-validMetrics.rootMeanSquaredError  // 6.312778659011311
-validMetrics.meanSquaredError  // 39.85117439766864
+validMetrics.rootMeanSquaredError  // 5.390945860032415
+validMetrics.meanSquaredError  // 29.062297265800634
 
 ---- step size = 0.1
 alg.optimizer.setStepSize(0.1)
 val model = alg.run(trainScaled)
-model: intercept = 18.548671974787677, numFeatures = 818
+model: intercept = 18.467829684656476, numFeatures = 819
 
 val validPredicts = validScaled.map(x => (model.predict(x.features),x.label))
 
 validPredicts.take(10)
-res35: Array[(Double, Double)] = Array((9.311304144345204,8.88), (17.42472356477238,15.92), (22.0187559548075,26.67), (9.302662673272952,10.0), (28.35677977142204,23.58), (8.934442351228897,9.75), (17.5527841169764,18.16), (19.39909457603021,19.96), (22.48648764612915,31.86), (5.697034095026574,7.62))
+res39: Array[(Double, Double)] = Array((16.537299097689896,17.28), (18.668591064370826,26.67), (20.05088605705007,28.66), (17.542882503945354,18.4), (16.277089824110764,22.01), (22.83842529190811,23.57), (9.623343532369661,8.82), (6.42692944126922,7.62), (10.486882171226624,9.79), (18.063344651244346,18.19))
 
 import org.apache.spark.mllib.evaluation.RegressionMetrics
 val validMetrics = new RegressionMetrics(validPredicts)
-validMetrics.rootMeanSquaredError  // 6.998520055720346
-validMetrics.meanSquaredError  // 48.97928297031991
+validMetrics.rootMeanSquaredError  // 5.878335437779543
+validMetrics.meanSquaredError  // 34.55482751905482
 
 ---- step size = 0.01
 alg.optimizer.setStepSize(0.01)
 val model = alg.run(trainScaled)
-model: intercept = 5.6278755586280385, numFeatures = 818
+model: intercept = 5.635640716038911, numFeatures = 819
 
 val validPredicts = validScaled.map(x => (model.predict(x.features),x.label))
 
 validPredicts.take(10)
-res39: Array[(Double, Double)] = Array((3.1659883767360655,8.88), (5.4387117179454405,15.92), (6.9759188606084495,26.67), (2.9530434430910137,10.0), (8.371814052161627,23.58), (2.6250555778995883,9.75), (5.195252628408679,18.16), (6.12695708778405,19.96), (7.285468326170644,31.86), (1.7796777685738463,7.62))
+res43: Array[(Double, Double)] = Array((5.266324700910975,17.28), (5.511377314491428,26.67), (6.313802990440106,28.66), (5.223561272274428,18.4), (4.919574198519201,22.01), (7.3963868473201195,23.57), (2.4198994825410463,8.82), (1.3445738770979547,7.62), (3.239066572959876,9.79), (5.502312673694902,18.19))
 
 import org.apache.spark.mllib.evaluation.RegressionMetrics
 val validMetrics = new RegressionMetrics(validPredicts)
-validMetrics.rootMeanSquaredError  // 18.07999257626309
-validMetrics.meanSquaredError  // 326.88613155772845
+validMetrics.rootMeanSquaredError  // 17.45251313902365
+validMetrics.meanSquaredError  // 304.5902148677931
