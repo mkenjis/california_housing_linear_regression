@@ -64,7 +64,7 @@ val rdd1 = rdd.map( x => x.slice(2,11)).map( x => x.map( y => y.toDouble))
 rdd1.take(5)
 res1: Array[Array[Double]] = Array(Array(-118.36, 33.8, 38.0, 2553.0, 400.0, 1042.0, 393.0, 6.9742, 500001.0), Array(-118.36, 33.8, 34.0, 2629.0, 369.0, 966.0, 375.0, 10.1241, 500001.0), Array(-121.32, 36.79, 30.0, 516.0, 90.0, 288.0, 95.0, 3.6333, 202500.0), Array(-118.08, 33.93, 39.0, 859.0, 164.0, 673.0, 172.0, 3.7143, 158200.0), Array(-118.08, 33.93, 39.0, 1478.0, 324.0, 1127.0, 320.0, 3.525, 158000.0))
 
----- Convert rdd(0) ("location") as 1-to-k encoding 
+---- Convert location (rdd(0)) as 1-to-k binary encoding vector
 
 def oneHotEncColumns(rddx: org.apache.spark.rdd.RDD[Array[String]], idx: Int):org.apache.spark.rdd.RDD[Array[Double]] = {
   val categories = rddx.map(r => r(idx)).distinct.zipWithIndex.collect.toMap
