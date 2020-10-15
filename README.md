@@ -1,5 +1,7 @@
 # california_housing_linear_regression
 california housing linear regression using MLlib
+- Source : Kaggle Dataset
+- URL : https://www.kaggle.com/camnugent/california-housing-prices
 
 # Purpose: 
 - use Californa housing dataset to train different linear regression models.

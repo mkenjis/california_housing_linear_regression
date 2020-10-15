@@ -49,17 +49,20 @@ val frdd = hrdd1.join(rdd2)
 
 val frdd1 = frdd.map( x => Array(x._2._2(0),x._2._2(1),x._2._1(0),x._2._1(1),x._2._1(2),x._2._1(3),x._2._1(4),x._2._1(5),x._2._1(6),x._2._1(7),x._2._1(8)))
 
-frdd1.map(x => x(0)+","+x(1)+","+x(2)+","+x(3)+","+x(4)+","+x(5)+","+x(6)+","+x(7)+","+x(8)+","+x(9)+","+x(10)).saveAsTextFile("/tmp/house_city")
+frdd1.map(x => x(0)+","+x(1)+","+x(2)+","+x(3)+","+x(4)+","+x(5)+","+x(6)+","+x(7)+","+x(8)+","+x(9)+","+x(10)).saveAsTextFile("/tmp/housing_city")
 
 --------------------------
 
-cp /tmp/house_city/part-00000 ~/housing-city.txt
+cp /tmp/housing_city/part-00000 ~/housing-city.txt
 
 -------------------------- Analysis and transformation of housing dataset using location instead of Latitude/Longitude 
 
 val rdd = sc.textFile("housing-city.txt").map( x => x.split(","))
 
-val rdd1 = rdd.map( x => Array(x(2).toDouble,x(3).toDouble,x(4).toDouble,x(5).toDouble,x(6).toDouble,x(7).toDouble,x(8).toDouble,x(9).toDouble,x(10).toDouble))
+val rdd1 = rdd.map( x => x.slice(2,11)).map( x => x.map( y => y.toDouble))
+
+rdd1.take(5)
+res1: Array[Array[Double]] = Array(Array(-118.36, 33.8, 38.0, 2553.0, 400.0, 1042.0, 393.0, 6.9742, 500001.0), Array(-118.36, 33.8, 34.0, 2629.0, 369.0, 966.0, 375.0, 10.1241, 500001.0), Array(-121.32, 36.79, 30.0, 516.0, 90.0, 288.0, 95.0, 3.6333, 202500.0), Array(-118.08, 33.93, 39.0, 859.0, 164.0, 673.0, 172.0, 3.7143, 158200.0), Array(-118.08, 33.93, 39.0, 1478.0, 324.0, 1127.0, 320.0, 3.525, 158000.0))
 
 def oneHotEncColumns(rddx: org.apache.spark.rdd.RDD[Array[String]], idx: Int):org.apache.spark.rdd.RDD[Array[Double]] = {
   val categories = rddx.map(r => r(idx)).distinct.zipWithIndex.collect.toMap
@@ -88,15 +91,21 @@ val concat = mergeArray(rdd,0)
 
 val vect = concat.zip(rdd1).map(x => (x._1.toList ++ x._2.toList).toArray)
 
+vect.first
+res2: Array[Double] = Array(0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0,...
+
 import org.apache.spark.mllib.linalg.Vectors
 import org.apache.spark.mllib.regression.LabeledPoint
 
 val data = vect.map(r => {
-  val arr_size = r.size 
-  val l = r(arr_size-1)/10000
-  val f = r.slice(0,arr_size-1)
+  val arr_size = r.size - 1
+  val l = r(arr_size)/10000
+  val f = r.slice(0,arr_size)
   LabeledPoint(l,Vectors.dense(f))
 })
+
+data.take(5)
+res3: Array[org.apache.spark.mllib.regression.LabeledPoint] = Array((50.0001,[0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,1.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0...
 
 val sets = data.randomSplit(Array(0.8,0.2))
 val trainSet = sets(0)
@@ -104,9 +113,8 @@ val testSet = sets(1)
 
 trainSet.cache
 
-import org.apache.spark.mllib.regression.LinearRegressionWithSGD
-val model = LinearRegressionWithSGD.train(trainSet, 200, 1.0)
-----
+---- MLlib Linear regression --------------
+
 import org.apache.spark.mllib.regression.LinearRegressionWithSGD
 val alg = new LinearRegressionWithSGD()
 alg.setIntercept(true)
@@ -188,13 +196,15 @@ validMetrics.rootMeanSquaredError  // 20.29826126211758
 validMetrics.meanSquaredError  // 412.0194102651832
 
 
--------------------------- Decide to scale features because variabiliaty increases even reducing step size of model 
+---- Decide to scale features because variabiliaty increases even reducing step size of model 
 
 import org.apache.spark.mllib.feature.StandardScaler
 val scaler = new StandardScaler(true, true).fit(trainSet.map(x => x.features))
  
 val trainScaled = trainSet.map(x => LabeledPoint(x.label,scaler.transform(x.features)))
 val validScaled = testSet.map(x => LabeledPoint(x.label, scaler.transform(x.features)))
+
+---- MLlib Linear regression --------------
 
 import org.apache.spark.mllib.regression.LinearRegressionWithSGD
 val alg = new LinearRegressionWithSGD()
