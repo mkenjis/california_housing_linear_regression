@@ -1,4 +1,4 @@
--------------------------- Steps in spark-shell to generate a shell script to query a webservice to get location from latitude/longitude 
+---- Steps in spark-shell to generate a shell script to query a webservice to get location from latitude/longitude 
 
 val rdd = sc.textFile("housing/cal_housing.data").map(x => x.split(","))
 
@@ -6,13 +6,13 @@ val rdd1 = rdd.map(x => (x(1),x(0))).distinct
 
 rdd1.map( x => "curl \"http://www.geoplugin.net/extras/location.gp?lat="+x._1+"&lon="+x._2+"\"; echo "; "+x._1+"; "+x._2).saveAsTextFile("/tmp/latlong")
 
--------------------------- Step to run in Unix
+---- Step to run in Unix shell
 
 > cp /tmp/latlong/part-00000 latlong.sh
 > chmod u+x latlong.sh
 nohup latlong.sh >latlong1.txt 2>/dev/null &
 
--------------------------- Steps to join cal_housing.data with latlong1.txt (contains California suburb of latitude/longitude) 
+---- Steps to join cal_housing.data with latlong1.txt (contains California suburb of latitude/longitude) 
 
 val rdd = sc.textFile("latlong1.txt").map(x => x.split(";"))
 
@@ -51,11 +51,11 @@ val frdd1 = frdd.map( x => Array(x._2._2(0),x._2._2(1),x._2._1(0),x._2._1(1),x._
 
 frdd1.map(x => x(0)+","+x(1)+","+x(2)+","+x(3)+","+x(4)+","+x(5)+","+x(6)+","+x(7)+","+x(8)+","+x(9)+","+x(10)).saveAsTextFile("/tmp/housing_city")
 
---------------------------
+---- Copy file save to inteligigle name
 
 cp /tmp/housing_city/part-00000 ~/housing-city.txt
 
--------------------------- Analysis and transformation of housing dataset using location instead of Latitude/Longitude 
+---- Analysis and transformation of housing dataset using location instead of Latitude/Longitude 
 
 val rdd = sc.textFile("housing-city.txt").map( x => x.split(","))
 
@@ -63,6 +63,8 @@ val rdd1 = rdd.map( x => x.slice(2,11)).map( x => x.map( y => y.toDouble))
 
 rdd1.take(5)
 res1: Array[Array[Double]] = Array(Array(-118.36, 33.8, 38.0, 2553.0, 400.0, 1042.0, 393.0, 6.9742, 500001.0), Array(-118.36, 33.8, 34.0, 2629.0, 369.0, 966.0, 375.0, 10.1241, 500001.0), Array(-121.32, 36.79, 30.0, 516.0, 90.0, 288.0, 95.0, 3.6333, 202500.0), Array(-118.08, 33.93, 39.0, 859.0, 164.0, 673.0, 172.0, 3.7143, 158200.0), Array(-118.08, 33.93, 39.0, 1478.0, 324.0, 1127.0, 320.0, 3.525, 158000.0))
+
+---- Convert rdd(0) ("location") as 1-to-k encoding 
 
 def oneHotEncColumns(rddx: org.apache.spark.rdd.RDD[Array[String]], idx: Int):org.apache.spark.rdd.RDD[Array[Double]] = {
   val categories = rddx.map(r => r(idx)).distinct.zipWithIndex.collect.toMap
